@@ -1,0 +1,170 @@
+import os
+import uuid
+from flask import Flask, request, send_file, jsonify, render_template
+from flask_cors import CORS
+from pydub import AudioSegment
+from pydub.effects import low_pass_filter
+from gtts import gTTS
+import logging
+
+# --- Basic Setup ---
+app = Flask(__name__, template_folder='templates', static_folder='static')
+CORS(app) # Enable Cross-Origin Resource Sharing for frontend requests
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
+# --- Configuration ---
+# Create directories for temporary file storage if they don't exist
+UPLOAD_FOLDER = 'uploads'
+PROCESSED_FOLDER = 'processed'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+if not os.path.exists(PROCESSED_FOLDER):
+    os.makedirs(PROCESSED_FOLDER)
+
+# --- Helper Functions ---
+def cleanup_files(files_to_delete):
+    """Safely deletes a list of files."""
+    for f in files_to_delete:
+        try:
+            os.remove(f)
+            logging.info(f"Successfully cleaned up file: {f}")
+        except OSError as e:
+            logging.error(f"Error cleaning up file {f}: {e}")
+
+# --- Main Routes ---
+@app.route('/')
+def index():
+    """Serves the main HTML page."""
+    return render_template('index.html')
+
+@app.route('/process-audio', methods=['POST'])
+def process_audio_route():
+    """
+    Handles audio file processing.
+    Accepts an audio file and effect parameters, applies transformations,
+    and returns the processed audio file for download.
+    """
+    if 'audio_file' not in request.files:
+        return jsonify({"error": "No audio file provided"}), 400
+
+    audio_file = request.files['audio_file']
+    
+    # --- Get parameters from the form ---
+    try:
+        tempo = float(request.form.get('slowed_tempo', 1.0))
+        reverb_amount = float(request.form.get('reverb_amount', 0)) / 100.0 # Convert from 0-100 to 0-1
+        lofi_intensity = int(request.form.get('lofi_filter', 0)) # Expecting a value e.g., 3000 Hz
+    except (ValueError, TypeError):
+        return jsonify({"error": "Invalid parameter values"}), 400
+
+    # --- File Handling ---
+    unique_id = uuid.uuid4()
+    original_filename = f"{unique_id}_original.wav"
+    processed_filename = f"{unique_id}_processed.mp3"
+    original_path = os.path.join(UPLOAD_FOLDER, original_filename)
+    processed_path = os.path.join(PROCESSED_FOLDER, processed_filename)
+
+    audio_file.save(original_path)
+
+    # --- Audio Processing ---
+    try:
+        # 1. Load audio file
+        sound = AudioSegment.from_file(original_path)
+        logging.info("Audio file loaded successfully.")
+
+        # 2. Apply Slowed effect
+        # We achieve slowing by modifying the frame rate of the audio segment
+        if 0.5 <= tempo < 1.0:
+            logging.info(f"Applying tempo change: {tempo}x")
+            sound = sound._spawn(sound.raw_data, overrides={
+                "frame_rate": int(sound.frame_rate * tempo)
+            })
+
+        # 3. Apply Reverb effect (simple echo simulation)
+        if reverb_amount > 0:
+            logging.info(f"Applying reverb with amount: {reverb_amount}")
+            # Create a delayed echo, reduce its volume, and overlay it
+            delay_ms = 150 # Delay for the echo
+            echo = sound - (15 - 15 * reverb_amount) # Decrease volume of the echo based on reverb amount
+            sound = sound.overlay(echo, position=delay_ms)
+
+        # 4. Apply Lofi filter effect
+        if lofi_intensity > 0:
+            logging.info(f"Applying lofi filter with cutoff at {lofi_intensity} Hz")
+            # A low-pass filter removes high frequencies, characteristic of lofi music
+            sound = low_pass_filter(sound, lofi_intensity)
+            # Optional: To simulate bitcrushing, reduce sample width
+            sound = sound.set_sample_width(2) # 2 bytes = 16-bit audio
+
+        # 5. Export processed audio
+        sound.export(processed_path, format="mp3")
+        logging.info("Audio processed and exported successfully.")
+        
+        # --- Send File to User ---
+        return send_file(
+            processed_path,
+            as_attachment=True,
+            download_name='processed_audio.mp3',
+            mimetype='audio/mpeg'
+        )
+
+    except Exception as e:
+        logging.error(f"An error occurred during audio processing: {e}")
+        return jsonify({"error": "Failed to process audio file."}), 500
+    finally:
+        # --- Cleanup ---
+        # Ensure temporary files are deleted after the request is complete
+        cleanup_files([original_path, processed_path])
+
+
+@app.route('/generate-tts', methods=['POST'])
+def generate_tts_route():
+    """
+    Handles Text-to-Speech generation.
+    Accepts text, language, and voice style, generates an audio file,
+    and returns it for download.
+    """
+    data = request.get_json()
+    if not data or 'text' not in data or 'language' not in data:
+        return jsonify({"error": "Missing text or language"}), 400
+
+    text_to_speak = data['text']
+    language = data['language']
+    # Note: 'voice' (Male/Female) is for UI purposes. gTTS uses a standard voice
+    # per language. This is here for future extensibility with other TTS engines.
+
+    if not text_to_speak.strip():
+        return jsonify({"error": "Text cannot be empty"}), 400
+
+    # --- TTS Generation ---
+    try:
+        logging.info(f"Generating TTS for language: {language}")
+        tts = gTTS(text=text_to_speak, lang=language, slow=False)
+        
+        unique_id = uuid.uuid4()
+        tts_filename = f"{unique_id}_tts.mp3"
+        tts_path = os.path.join(PROCESSED_FOLDER, tts_filename)
+        
+        tts.save(tts_path)
+        logging.info("TTS file saved successfully.")
+
+        return send_file(
+            tts_path,
+            as_attachment=True,
+            download_name='generated_speech.mp3',
+            mimetype='audio/mpeg'
+        )
+
+    except Exception as e:
+        logging.error(f"An error occurred during TTS generation: {e}")
+        return jsonify({"error": "Failed to generate speech."}), 500
+    finally:
+        # --- Cleanup ---
+        if 'tts_path' in locals() and os.path.exists(tts_path):
+            cleanup_files([tts_path])
+
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
