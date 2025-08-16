@@ -1,0 +1,236 @@
+/* --- Global Styles & Variables --- */
+:root {
+    --bg-color: #121212;
+    --surface-color: #1e1e1e;
+    --primary-color: #6200ea;
+    --primary-variant-color: #3700b3;
+    --secondary-color: #03dac6;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --border-color: #2c2c2c;
+    --success-color: #4caf50;
+    --error-color: #f44336;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding: 2rem 1rem;
+}
+
+/* --- Layout --- */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.module {
+    background-color: var(--surface-color);
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.module h2 {
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+/* --- Language Switcher --- */
+.lang-switcher button {
+    background: none;
+    border: 1px solid var(--text-secondary);
+    color: var(--text-secondary);
+    padding: 0.3rem 0.6rem;
+    margin-left: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.lang-switcher button:hover, .lang-switcher button.active {
+    background-color: var(--primary-color);
+    color: var(--text-primary);
+    border-color: var(--primary-color);
+}
+
+/* --- Forms & Controls --- */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.controls-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem 2rem;
+}
+
+input[type="file"], textarea, select {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* --- File Upload Styling --- */
+.file-upload-group {
+    position: relative;
+    border: 2px dashed var(--border-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    transition: border-color 0.2s;
+}
+.file-upload-group:hover {
+    border-color: var(--primary-color);
+}
+input[type="file"] {
+    display: none; /* Hide the default input */
+}
+.file-label {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s;
+}
+.file-label:hover {
+    background-color: var(--primary-variant-color);
+}
+#file-name {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+}
+
+
+/* --- Custom Slider Styling --- */
+.slider-group {
+    display: flex;
+    flex-direction: column;
+}
+.slider-group label {
+    display: flex;
+    justify-content: space-between;
+}
+.slider-value {
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    background: #333;
+    border-radius: 5px;
+    outline: none;
+    padding: 0;
+    margin-top: 0.5rem;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--secondary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: #03fbe1;
+}
+
+/* --- Buttons & Status Area --- */
+.submit-btn {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+    background-color: var(--primary-variant-color);
+}
+.submit-btn:disabled {
+    background-color: #333;
+    cursor: not-allowed;
+}
+
+.status-area {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 4px;
+    text-align: center;
+}
+.status-area a {
+    background-color: var(--success-color);
+    color: white;
+    text-decoration: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: 500;
+}
+.status-area .loading {
+    color: var(--text-secondary);
+}
+.status-area .error {
+    color: var(--error-color);
+}
+
+/* --- Responsive Design --- */
+@media (min-width: 768px) {
+    .controls-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
