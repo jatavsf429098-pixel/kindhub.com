@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Transformation Suite</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 data-lang-key="app_title">Audio Transformation Suite 🎧</h1>
+            <div class="lang-switcher">
+                <button id="lang-en" class="active">EN</button>
+                <button id="lang-hi">HI</button>
+            </div>
+        </header>
+
+        <main>
+            <section class="module">
+                <h2 data-lang-key="converter_title">Audio Converter (Lofi + Slowed + Reverb)</h2>
+                <form id="audio-form" enctype="multipart/form-data">
+                    <div class="form-group file-upload-group">
+                        <label for="audio-file-input" class="file-label" data-lang-key="upload_label">Choose Audio File</label>
+                        <input type="file" id="audio-file-input" name="audio_file" accept=".mp3,.wav,.flac" required>
+                        <span id="file-name" data-lang-key="no_file_chosen">No file chosen</span>
+                    </div>
+
+                    <div class="controls-grid">
+                        <div class="form-group slider-group">
+                            <label for="slowed-tempo" data-lang-key="tempo_label">Slowed Tempo</label>
+                            <input type="range" id="slowed-tempo" name="slowed_tempo" min="0.5" max="1.0" step="0.05" value="1.0">
+                            <span class="slider-value" id="tempo-value">1.0x</span>
+                        </div>
+
+                        <div class="form-group slider-group">
+                            <label for="reverb-amount" data-lang-key="reverb_label">Reverb Amount</label>
+                            <input type="range" id="reverb-amount" name="reverb_amount" min="0" max="100" step="1" value="0">
+                            <span class="slider-value" id="reverb-value">0%</span>
+                        </div>
+
+                        <div class="form-group slider-group">
+                            <label for="lofi-filter" data-lang-key="lofi_label">Lofi Filter (Low-Pass Hz)</label>
+                            <input type="range" id="lofi-filter" name="lofi_filter" min="0" max="5000" step="100" value="0">
+                            <span class="slider-value" id="lofi-value">Off</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn" data-lang-key="process_btn">Process Audio</button>
+                </form>
+                <div id="audio-status" class="status-area"></div>
+            </section>
+
+            <section class="module">
+                <h2 data-lang-key="tts_title">Text-to-Human-like-Voice</h2>
+                <form id="tts-form">
+                    <div class="form-group">
+                        <label for="tts-text" data-lang-key="tts_input_label">Enter Text</label>
+                        <textarea id="tts-text" rows="6" placeholder="Type or paste your text here..."></textarea>
+                    </div>
+
+                    <div class="controls-grid">
+                        <div class="form-group">
+                            <label for="tts-language" data-lang-key="language_label">Language</label>
+                            <select id="tts-language">
+                                <option value="en">English</option>
+                                <option value="hi">Hindi</option>
+                                <option value="es">Spanish</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tts-voice" data-lang-key="voice_style_label">Voice Style</label>
+                            <select id="tts-voice">
+                                <option value="female" data-lang-key="female_voice">Female</option>
+                                <option value="male" data-lang-key="male_voice">Male</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" data-lang-key="generate_btn">Generate Speech</button>
+                </form>
+                <div id="tts-status" class="status-area"></div>
+            </section>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
